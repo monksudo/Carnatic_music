@@ -1,0 +1,58 @@
+name: Deploy gallery to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "studio/studio/web/**"
+      - "studio/studio/library/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Assemble site
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          # Top-level lives at studio/web; nest under /studio so links from the
+          # Carnatic music page at /index.html still work.
+          cp -r studio/studio/web/* _site/
+          # Library: ship the JSON index + the SVG files so the static site
+          # can render them without a server.
+          mkdir -p _site/library/svg
+          cp studio/studio/library/index.json _site/library/index.json
+          cp -r studio/studio/library/svg/* _site/library/svg/ 2>/dev/null || true
+          # Also publish the original Carnatic page at /carnatic.html for reference.
+          if [ -f index.html ]; then
+            cp index.html _site/carnatic.html
+          fi
+          ls -la _site
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

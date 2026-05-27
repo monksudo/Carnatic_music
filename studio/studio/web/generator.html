@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Studio — Generator playground</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .playground { display: grid; gap: 18px; grid-template-columns: 1.1fr 1fr; padding: 18px; }
+    .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+    .panel h2 { margin: 0 0 12px; font-size: 16px; }
+    label { display: grid; gap: 4px; margin-bottom: 10px; font-size: 13px; color: var(--muted); }
+    label input, label select, label textarea {
+      background: #0b0f1a; color: var(--ink); border: 1px solid var(--line);
+      border-radius: 6px; padding: 8px 10px; font: inherit;
+    }
+    .row { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+    button.run { background: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }
+    button.run:disabled { opacity: 0.5; cursor: not-allowed; }
+    .preview-wrap { aspect-ratio: 1 / 1; background: #0b0f1a; padding: 16px; border-radius: 8px; display: grid; place-items: center; }
+    pre { background: #0b0f1a; padding: 10px; border-radius: 8px; overflow: auto; max-height: 300px; font-size: 12px; }
+    @media (max-width: 900px) { .playground { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Generator playground</h1>
+    <p class="tagline">Drive the local Studio API at <code id="api-url">http://127.0.0.1:8000</code>. Start it with <code>studio serve</code>.</p>
+    <nav class="tools"><a href="index.html">← Back to gallery</a></nav>
+  </header>
+  <main class="playground">
+    <section class="panel">
+      <h2>Inputs</h2>
+      <label>API base URL
+        <input id="api" value="http://127.0.0.1:8000" />
+      </label>
+      <div class="row">
+        <label>Type
+          <select id="type"></select>
+        </label>
+        <label>Palette
+          <select id="palette"></select>
+        </label>
+      </div>
+      <label>Prompt
+        <textarea id="prompt" rows="2" placeholder="e.g., isometric kubernetes cluster">isometric storage cube</textarea>
+      </label>
+      <div class="row">
+        <label>Style
+          <select id="style_mode">
+            <option value="layered_3d" selected>layered_3d</option>
+            <option value="flat">flat</option>
+          </select>
+        </label>
+        <label>Layering (1–6)
+          <input id="layering" type="number" min="1" max="6" value="4" />
+        </label>
+      </div>
+      <div class="row">
+        <label>Aspect ratio
+          <input id="aspect" value="1:1" />
+        </label>
+        <label>Seed
+          <input id="seed" type="number" placeholder="optional" />
+        </label>
+      </div>
+      <label>Components (comma-separated)
+        <input id="components" placeholder="e.g. server, database, user" />
+      </label>
+      <label>Combinations / composition hint
+        <input id="combinations" placeholder="e.g. user on left, db on right" />
+      </label>
+      <label>Tags (comma-separated)
+        <input id="tags" placeholder="e.g. domain:aws, style:papercraft" />
+      </label>
+      <button class="run" id="run">Generate</button>
+    </section>
+    <section class="panel">
+      <h2>Output</h2>
+      <div class="preview-wrap" id="preview">
+        <p style="color:#7d8590">No render yet.</p>
+      </div>
+      <p id="status" style="color:#7d8590;font-size:13px;margin-top:10px"></p>
+      <details><summary>Raw response JSON</summary><pre id="raw"></pre></details>
+    </section>
+  </main>
+  <footer><p>The API must be running locally (or proxied through a free HF Space) — no model runs in the browser yet.</p></footer>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    async function init() {
+      const api = $("api").value;
+      try {
+        const [types, palettes] = await Promise.all([
+          fetch(api + "/types").then(r => r.json()),
+          fetch(api + "/palettes").then(r => r.json()),
+        ]);
+        types.forEach(t => $("type").append(new Option(t, t)));
+        palettes.forEach(p => $("palette").append(new Option(`${p.name} (${p.id})`, p.id)));
+      } catch (e) {
+        $("status").textContent = "Could not reach API. Start it with `studio serve`.";
+      }
+    }
+    $("api").addEventListener("change", init);
+
+    $("run").addEventListener("click", async () => {
+      const api = $("api").value;
+      const body = {
+        type: $("type").value,
+        prompt: $("prompt").value,
+        palette: $("palette").value || "dusk",
+        style_mode: $("style_mode").value,
+        layering: parseInt($("layering").value, 10),
+        aspect_ratio: $("aspect").value || null,
+        seed: $("seed").value ? parseInt($("seed").value, 10) : null,
+        components: $("components").value.split(",").map(s => s.trim()).filter(Boolean),
+        combinations: $("combinations").value,
+        tags: $("tags").value.split(",").map(s => s.trim()).filter(Boolean),
+      };
+      $("run").disabled = true;
+      $("status").textContent = "Generating...";
+      $("preview").innerHTML = "";
+      try {
+        const r = await fetch(api + "/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const json = await r.json();
+        $("raw").textContent = JSON.stringify(json, null, 2);
+        if (!r.ok) {
+          $("status").textContent = "Error: " + (json.detail || JSON.stringify(json));
+          return;
+        }
+        $("preview").innerHTML = json.svg;
+        const a = json.asset;
+        $("status").textContent = `slug=${a ? a.slug : "(unsaved)"} | attempts=${json.attempts} | sanitizer remapped ${json.sanitize_report.refs_remapped} ref(s)`;
+      } catch (e) {
+        $("status").textContent = "Request failed: " + e.message;
+      } finally {
+        $("run").disabled = false;
+      }
+    });
+
+    init();
+  </script>
+</body>
+</html>

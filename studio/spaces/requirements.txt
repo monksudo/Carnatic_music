@@ -1,0 +1,1 @@
+studio-svg[hf] @ git+https://github.com/monksudo/carnatic_music@main#subdirectory=studio

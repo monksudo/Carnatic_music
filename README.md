@@ -20,3 +20,11 @@ A single-page visual reference (`index.html`) covering the core building blocks 
 ## Viewing
 
 Just open `index.html` in any browser — no build step or dependencies.
+
+## Studio — local-AI SVG generator
+
+This repo also hosts **Studio**, a separate subsystem under [`studio/`](studio/)
+that generates layered, no-gradient, 3D-look SVGs (icons, papercraft clip art,
+architecture diagrams) using a local LLM (Ollama by default), with a tagged,
+searchable library and CLI / HTTP API / MCP-server access. See
+[`studio/README.md`](studio/README.md) for full usage.

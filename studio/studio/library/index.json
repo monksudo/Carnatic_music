@@ -1,0 +1,149 @@
+[
+  {
+    "slug": "papercraft-cloud",
+    "type": "icon",
+    "title": "Papercraft cloud",
+    "description": "A friendly cloud icon using stacked palette layers for depth.",
+    "palette": "dusk",
+    "model": "seed",
+    "prompt": "seed/exemplar",
+    "tags": [
+      "domain:cloud",
+      "palette:dusk",
+      "style:papercraft",
+      "type:icon"
+    ],
+    "seed": null,
+    "svg_path": "svg/papercraft-cloud.svg",
+    "png_path": "",
+    "parent_slug": null,
+    "sha256": "2fc60b03abc2a381e603ff86076ff01de3ed7f882a859446e426be8f7259728c",
+    "created_at": "2026-05-27T23:42:38Z"
+  },
+  {
+    "slug": "papercraft-server-rack",
+    "type": "icon",
+    "title": "Server rack",
+    "description": "Vertical server rack with status LEDs, layered papercraft style.",
+    "palette": "dusk",
+    "model": "seed",
+    "prompt": "seed/exemplar",
+    "tags": [
+      "domain:infra",
+      "palette:dusk",
+      "style:papercraft",
+      "type:icon"
+    ],
+    "seed": null,
+    "svg_path": "svg/papercraft-server-rack.svg",
+    "png_path": "",
+    "parent_slug": null,
+    "sha256": "2f6f8f5f1db00ce455c0d36398f7d9a3022afe1536bca2161e4bbf4f8cd9464a",
+    "created_at": "2026-05-27T23:42:38Z"
+  },
+  {
+    "slug": "papercraft-lock",
+    "type": "icon",
+    "title": "Padlock",
+    "description": "Locked padlock — papercraft style, suitable for security UI.",
+    "palette": "dusk",
+    "model": "seed",
+    "prompt": "seed/exemplar",
+    "tags": [
+      "domain:security",
+      "palette:dusk",
+      "style:papercraft",
+      "type:icon"
+    ],
+    "seed": null,
+    "svg_path": "svg/papercraft-lock.svg",
+    "png_path": "",
+    "parent_slug": null,
+    "sha256": "26c2486e51c68f8602165cdf55fa72172794de2fa0cf132f8b28604e821f590a",
+    "created_at": "2026-05-27T23:42:38Z"
+  },
+  {
+    "slug": "isometric-storage-cube",
+    "type": "clipart_3d_layered",
+    "title": "Isometric storage cube",
+    "description": "A chunky isometric cube with three visible faces and ground shadow.",
+    "palette": "dusk",
+    "model": "seed",
+    "prompt": "seed/exemplar",
+    "tags": [
+      "palette:dusk",
+      "style:isometric",
+      "style:papercraft",
+      "type:clipart_3d_layered"
+    ],
+    "seed": null,
+    "svg_path": "svg/isometric-storage-cube.svg",
+    "png_path": "",
+    "parent_slug": null,
+    "sha256": "ff231851eaa880e74869be5c61900dc7667f49e3342439eb63fad85d04e72cf6",
+    "created_at": "2026-05-27T23:42:38Z"
+  },
+  {
+    "slug": "isometric-folder",
+    "type": "clipart_3d_layered",
+    "title": "Isometric folder",
+    "description": "A friendly isometric folder with a tab and paper edges peeking out.",
+    "palette": "dusk",
+    "model": "seed",
+    "prompt": "seed/exemplar",
+    "tags": [
+      "domain:files",
+      "palette:dusk",
+      "style:isometric",
+      "type:clipart_3d_layered"
+    ],
+    "seed": null,
+    "svg_path": "svg/isometric-folder.svg",
+    "png_path": "",
+    "parent_slug": null,
+    "sha256": "c42a43535446facc8faacb42583cabb156385fc76941a010d8586fa77b751c39",
+    "created_at": "2026-05-27T23:42:38Z"
+  },
+  {
+    "slug": "isometric-database",
+    "type": "clipart_3d_layered",
+    "title": "Isometric database",
+    "description": "Classic cylinder database with stacked rings.",
+    "palette": "dusk",
+    "model": "seed",
+    "prompt": "seed/exemplar",
+    "tags": [
+      "domain:database",
+      "palette:dusk",
+      "style:isometric",
+      "type:clipart_3d_layered"
+    ],
+    "seed": null,
+    "svg_path": "svg/isometric-database.svg",
+    "png_path": "",
+    "parent_slug": null,
+    "sha256": "d2e16fddfa90bd5f504acc702cf622d32b7fa8c1f58c75036c24ef30b5ce4281",
+    "created_at": "2026-05-27T23:42:38Z"
+  },
+  {
+    "slug": "arch-user-api-db",
+    "type": "arch_diagram",
+    "title": "User → API → Database",
+    "description": "A canonical three-component architecture diagram, slide-ready.",
+    "palette": "dusk",
+    "model": "seed",
+    "prompt": "seed/exemplar",
+    "tags": [
+      "domain:architecture",
+      "palette:dusk",
+      "style:papercraft",
+      "type:arch_diagram"
+    ],
+    "seed": null,
+    "svg_path": "svg/arch-user-api-db.svg",
+    "png_path": "",
+    "parent_slug": null,
+    "sha256": "43f2df9a87cfdd21350852138ef1f33c2df31320538e1df032b20e70fbdae0bb",
+    "created_at": "2026-05-27T23:42:38Z"
+  }
+]

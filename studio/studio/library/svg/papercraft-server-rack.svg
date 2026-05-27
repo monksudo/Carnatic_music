@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="14" y="50" width="36" height="6" fill="#161d3a" data-layer="0" data-role="rack-shadow"/>
+  <rect x="14" y="10" width="36" height="42" fill="#2c3a6b" data-layer="1" data-role="rack-body"/>
+  <rect x="16" y="12" width="32" height="38" fill="#5d7bc7" data-layer="2" data-role="rack-front"/>
+  <rect x="18" y="14" width="28" height="6" fill="#a8c0ee" data-layer="3" data-role="rack-slot-1"/>
+  <rect x="18" y="22" width="28" height="6" fill="#a8c0ee" data-layer="3" data-role="rack-slot-2"/>
+  <rect x="18" y="30" width="28" height="6" fill="#a8c0ee" data-layer="3" data-role="rack-slot-3"/>
+  <rect x="18" y="38" width="28" height="6" fill="#a8c0ee" data-layer="3" data-role="rack-slot-4"/>
+  <circle cx="44" cy="17" r="1.5" fill="#22d3ee" data-layer="4" data-role="led-1"/>
+  <circle cx="44" cy="25" r="1.5" fill="#22d3ee" data-layer="4" data-role="led-2"/>
+  <circle cx="44" cy="33" r="1.5" fill="#f5a623" data-layer="4" data-role="led-3"/>
+  <circle cx="44" cy="41" r="1.5" fill="#22d3ee" data-layer="4" data-role="led-4"/>
+</svg>

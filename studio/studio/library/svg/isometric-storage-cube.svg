@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <ellipse cx="100" cy="170" rx="60" ry="10" fill="#161d3a" data-layer="0" data-role="ground-shadow"/>
+  <polygon points="100,60 160,90 160,150 100,180 40,150 40,90" fill="#161d3a" data-layer="1" data-role="cube-shadow-edge"/>
+  <polygon points="100,60 160,90 100,120 40,90" fill="#a8c0ee" data-layer="4" data-role="cube-top"/>
+  <polygon points="100,120 160,90 160,150 100,180" fill="#2c3a6b" data-layer="2" data-role="cube-right"/>
+  <polygon points="100,120 40,90 40,150 100,180" fill="#5d7bc7" data-layer="3" data-role="cube-front"/>
+  <polygon points="100,60 130,75 100,90 70,75" fill="#e8f0ff" data-layer="5" data-role="cube-highlight"/>
+  <rect x="60" y="135" width="80" height="6" fill="#2c3a6b" data-layer="3" data-role="cube-band"/>
+  <circle cx="130" cy="138" r="2" fill="#22d3ee" data-layer="5" data-role="status-led"/>
+</svg>

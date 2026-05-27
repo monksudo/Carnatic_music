@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "studio-svg"
+version = "0.1.0"
+description = "Local-AI SVG generator producing layered, no-gradient, 3D-look visuals (icons, charts, clip art, cloud diagrams, AI architecture)."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "monksudo" }]
+dependencies = [
+    "httpx>=0.27",
+    "lxml>=5.2",
+    "typer>=0.12",
+    "rich>=13.7",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.30",
+    "pydantic>=2.7",
+    "scour>=0.38.2",
+]
+
+[project.optional-dependencies]
+raster = ["resvg-py>=0.1.0; platform_system != 'Windows'", "cairosvg>=2.7"]
+openai = ["openai>=1.40"]
+hf = ["huggingface_hub>=0.24"]
+mcp = ["mcp>=1.0"]
+dev = ["pytest>=8.0", "pytest-asyncio>=0.23", "ruff>=0.5"]
+all = [
+    "resvg-py>=0.1.0; platform_system != 'Windows'",
+    "cairosvg>=2.7",
+    "openai>=1.40",
+    "huggingface_hub>=0.24",
+    "mcp>=1.0",
+]
+
+[project.scripts]
+studio = "studio.cli.app:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["studio*"]
+
+[tool.setuptools.package-data]
+"studio.core.prompts" = ["*.md", "*.json"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP"]
+ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+# Typer requires function calls in defaults; that's idiomatic, not a bug.
+"studio/cli/app.py" = ["B008"]
+# `l` (capital L*) is the canonical name of the lightness channel in OKLab.
+"studio/style/palettes.py" = ["E741"]

@@ -1,0 +1,17 @@
+{
+  "name": "@monksudo/studio-mcp",
+  "version": "0.1.0",
+  "description": "MCP launcher for Studio — exposes the local studio-svg server to Claude Desktop and claude.ai.",
+  "license": "MIT",
+  "bin": {
+    "studio-mcp": "bin/studio-mcp.js"
+  },
+  "engines": { "node": ">=18" },
+  "files": ["bin/"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/monksudo/carnatic_music.git",
+    "directory": "studio/npm"
+  },
+  "keywords": ["mcp", "claude", "svg", "studio"]
+}
