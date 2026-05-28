@@ -50,13 +50,20 @@
         <p class="hint">Run <code>pip install -e ./studio &amp;&amp; studio serve</code> after installing Ollama (also free).</p>
       </div>
       <div id="cfg-hf" style="display:none">
-        <label>Hugging Face token (free, paste it locally — never sent anywhere except api-inference.huggingface.co)
+        <label>Hugging Face token (free, paste it locally — never sent anywhere except router.huggingface.co)
           <input id="hf_token" type="password" placeholder="hf_..." autocomplete="off"/>
         </label>
         <label>Model
-          <input id="hf_model" value="Qwen/Qwen2.5-Coder-32B-Instruct"/>
+          <select id="hf_model_select" style="margin-bottom:6px">
+            <option value="Qwen/Qwen2.5-Coder-7B-Instruct" selected>Qwen2.5-Coder-7B (code, fast, recommended)</option>
+            <option value="meta-llama/Llama-3.1-8B-Instruct">Llama-3.1-8B-Instruct (general)</option>
+            <option value="meta-llama/Llama-3.2-3B-Instruct">Llama-3.2-3B-Instruct (fastest)</option>
+            <option value="Qwen/Qwen2.5-Coder-32B-Instruct">Qwen2.5-Coder-32B (best, may need paid provider)</option>
+            <option value="">— custom (type below) —</option>
+          </select>
+          <input id="hf_model" value="Qwen/Qwen2.5-Coder-7B-Instruct"/>
         </label>
-        <p class="hint">Get a token at <a href="https://huggingface.co/settings/tokens">huggingface.co/settings/tokens</a>. The token stays in your browser's memory — never persisted, never sent to this site.</p>
+        <p class="hint">Get a token at <a href="https://huggingface.co/settings/tokens">huggingface.co/settings/tokens</a> (Token type: <em>Read</em> with "Make calls to Inference Providers" enabled). The token stays in your browser's memory — never persisted, never sent to this site. If a model returns 404 / "model not found", it isn't on the free serverless providers — pick another from the dropdown.</p>
       </div>
 
       <div class="row">
@@ -142,6 +149,15 @@
       }
     }
 
+    // Sync model dropdown ↔ free-text input.
+    const hfSelect = $("hf_model_select");
+    const hfInput = $("hf_model");
+    if (hfSelect) {
+      hfSelect.addEventListener("change", () => {
+        if (hfSelect.value) hfInput.value = hfSelect.value;
+      });
+    }
+
     $("tab-local").addEventListener("click", () => {
       mode = "local";
       $("tab-local").classList.add("active"); $("tab-hf").classList.remove("active");
@@ -217,25 +233,50 @@ Never blend or interpolate.`;
       if (!token) throw new Error("Paste a Hugging Face token first.");
       if (!model) throw new Error("Pick an HF model.");
       const sys = buildSystemPrompt(opts);
-      const url = `https://api-inference.huggingface.co/v1/chat/completions`;
-      const r = await fetch(url, {
-        method: "POST",
-        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model,
-          messages: [
-            { role: "system", content: sys },
-            { role: "user", content: opts.prompt },
-          ],
-          max_tokens: 4096,
-          temperature: 0.4,
-          seed: opts.seed,
-        }),
-      });
-      const json = await r.json();
-      if (!r.ok) throw new Error(json.error || json.message || JSON.stringify(json));
+
+      // HF's browser-friendly endpoint: router.huggingface.co supports CORS and
+      // routes to whichever provider serves the requested model under the
+      // OpenAI-compatible chat-completions interface.
+      const url = `https://router.huggingface.co/v1/chat/completions`;
+      let r;
+      try {
+        r = await fetch(url, {
+          method: "POST",
+          mode: "cors",
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            model,
+            messages: [
+              { role: "system", content: sys },
+              { role: "user", content: opts.prompt },
+            ],
+            max_tokens: 4096,
+            temperature: 0.4,
+            // seed is optional and many providers ignore it; omit when null.
+            ...(opts.seed != null ? { seed: opts.seed } : {}),
+          }),
+        });
+      } catch (e) {
+        // TypeError "Failed to fetch" almost always means CORS, DNS, or
+        // network — surface it clearly with diagnostic hints.
+        throw new Error(
+          `Network / CORS error: ${e.message}. Common causes: (a) typo in the token, ` +
+          `(b) model "${model}" isn't served by HF Inference Providers — try ` +
+          `"meta-llama/Llama-3.1-8B-Instruct" or "Qwen/Qwen2.5-Coder-7B-Instruct", ` +
+          `(c) you're offline.`
+        );
+      }
+      let json;
+      try { json = await r.json(); } catch { json = { error: await r.text() }; }
+      if (!r.ok) {
+        const msg = json.error?.message || json.error || json.message || JSON.stringify(json);
+        throw new Error(`HF ${r.status}: ${msg}`);
+      }
       const content = json.choices?.[0]?.message?.content;
-      if (!content) throw new Error("HF returned empty content.");
+      if (!content) throw new Error("HF returned empty content. Raw: " + JSON.stringify(json).slice(0, 400));
       const { svg, report } = sanitize(content, palette(opts.palette));
       const errors = validate(svg, { minLayers: Math.min(opts.layering, 3), requireRole: true });
       if (errors.length) console.warn("validation:", errors);
