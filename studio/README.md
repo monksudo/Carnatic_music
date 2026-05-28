@@ -39,7 +39,7 @@ Pick whichever loads fastest for you — each is free, each gives a public URL:
 
 | Service | What it gives you | Tap to deploy |
 |---|---|---|
-| **Vercel** (fastest, ~30s) | Static site (gallery + verify + browser-side HF generator) on a `*.vercel.app` URL | [Deploy to Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmonksudo%2FCarnatic_music%2Ftree%2Fclaude%2Flocal-ai-3d-visuals-hYSiJ&project-name=studio-svg&output-directory=_site&build-command=bash%20build_studio_site.sh&install-command=echo%20skip) |
+| **Vercel** (fastest, ~30s) | Static site (gallery + verify + browser-side HF generator) on a `*.vercel.app` URL | [Deploy to Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmonksudo%2FCarnatic_music&branch=claude%2Flocal-ai-3d-visuals-hYSiJ&project-name=studio-svg) |
 | **Cloudflare Pages** | Same site, on a `*.pages.dev` URL | [pages.cloudflare.com](https://pages.cloudflare.com) → Connect Git → pick this repo |
 | **Netlify** | Same site, on a `*.netlify.app` URL | [netlify.com/start](https://app.netlify.com/start) → Connect GitHub → pick this repo |
 | **GitHub Pages** (slowest setup but built-in) | `https://<your-username>.github.io/Carnatic_music/` | One time: open [repo Settings → Pages](https://github.com/monksudo/Carnatic_music/settings/pages) on your phone, set **Source: GitHub Actions**, Save. Next push auto-deploys. |
