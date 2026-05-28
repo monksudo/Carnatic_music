@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "buildCommand": "bash build_studio_site.sh",
+  "outputDirectory": "_site",
+  "installCommand": "echo skip",
+  "framework": null,
+  "trailingSlash": false
+}

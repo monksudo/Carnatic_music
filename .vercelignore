@@ -1,0 +1,8 @@
+# Don't upload the venv or local caches.
+studio/.venv/
+studio/.pytest_cache/
+studio/.ruff_cache/
+**/__pycache__/
+**/*.egg-info/
+*.pyc
+.git/
