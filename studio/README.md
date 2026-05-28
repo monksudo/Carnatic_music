@@ -33,6 +33,22 @@ $ studio generate clipart_3d_layered "isometric data center" \
 - **Deterministic recolor**: re-skin any asset to any palette without a model
   call (instant, lossless). Lineage is tracked via `parent_slug`.
 
+## 📱 Verify on your phone (1-tap, no install)
+
+Pick whichever loads fastest for you — each is free, each gives a public URL:
+
+| Service | What it gives you | Tap to deploy |
+|---|---|---|
+| **Vercel** (fastest, ~30s) | Static site (gallery + verify + browser-side HF generator) on a `*.vercel.app` URL | [Deploy to Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fmonksudo%2FCarnatic_music%2Ftree%2Fclaude%2Flocal-ai-3d-visuals-hYSiJ&project-name=studio-svg&output-directory=_site&build-command=bash%20build_studio_site.sh&install-command=echo%20skip) |
+| **Cloudflare Pages** | Same site, on a `*.pages.dev` URL | [pages.cloudflare.com](https://pages.cloudflare.com) → Connect Git → pick this repo |
+| **Netlify** | Same site, on a `*.netlify.app` URL | [netlify.com/start](https://app.netlify.com/start) → Connect GitHub → pick this repo |
+| **GitHub Pages** (slowest setup but built-in) | `https://<your-username>.github.io/Carnatic_music/` | One time: open [repo Settings → Pages](https://github.com/monksudo/Carnatic_music/settings/pages) on your phone, set **Source: GitHub Actions**, Save. Next push auto-deploys. |
+
+After the URL is live you get **three pages** on your phone:
+- `/` — gallery of all 7 seeded SVGs (proof the no-gradient layered look works)
+- `/verify.html` — **interactive editor**: swap palettes, recolor any layer/role, toggle layers, download. 100% client-side.
+- `/generator.html` — playground. Switch to the **HF Inference** tab, paste a free HF token from [huggingface.co/settings/tokens](https://huggingface.co/settings/tokens), and generate brand-new SVGs from your phone with no backend at all.
+
 ## Verify it works (free, zero install)
 
 Two free paths, neither requires installing anything locally:

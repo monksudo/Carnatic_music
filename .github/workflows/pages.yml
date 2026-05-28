@@ -43,6 +43,8 @@ jobs:
           ls -la _site
 
       - uses: actions/configure-pages@v5
+        with:
+          enablement: true        # auto-enable Pages on first run if not yet on
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
