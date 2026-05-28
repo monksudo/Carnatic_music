@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <path d="M14 44 Q14 30 26 30 Q28 22 38 22 Q50 22 50 32 Q58 32 58 42 Q58 50 50 50 L20 50 Q14 50 14 44 Z" fill="#161d3a" data-layer="0" data-role="cloud-shadow"/>
+  <path d="M14 42 Q14 28 26 28 Q28 20 38 20 Q50 20 50 30 Q58 30 58 40 Q58 48 50 48 L20 48 Q14 48 14 42 Z" fill="#2c3a6b" data-layer="1" data-role="cloud-base"/>
+  <path d="M16 40 Q16 28 26 28 Q28 21 37 21 Q48 21 48 30 Q55 30 55 38 Q55 45 48 45 L22 45 Q16 45 16 40 Z" fill="#5d7bc7" data-layer="2" data-role="cloud-mid"/>
+  <path d="M20 36 Q20 28 27 28 Q29 23 36 23 Q44 23 44 30 Q49 30 49 35 Q49 39 44 39 L26 39 Q20 39 20 36 Z" fill="#a8c0ee" data-layer="3" data-role="cloud-light"/>
+  <ellipse cx="32" cy="31" rx="6" ry="2" fill="#e8f0ff" data-layer="4" data-role="cloud-highlight"/>
+</svg>

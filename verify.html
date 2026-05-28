@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Studio — Verify &amp; Fine-tune</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    body { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+    .layout { display: grid; gap: 0; grid-template-columns: 240px 1fr 320px; min-height: 0; }
+    aside, .center, .right { overflow: auto; padding: 14px; }
+    aside { border-right: 1px solid var(--line); background: #0c1019; }
+    .right { border-left: 1px solid var(--line); background: #0c1019; }
+    aside h3, .right h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 6px 0 8px; }
+    aside .item { display: flex; gap: 8px; padding: 6px; border-radius: 6px; cursor: pointer; align-items: center; margin-bottom: 2px; }
+    aside .item:hover { background: #161d2c; }
+    aside .item.active { background: #1a253d; outline: 1px solid var(--accent); }
+    aside .item .thumb { width: 36px; height: 36px; background: #0b0f1a; border-radius: 4px; padding: 4px; flex: 0 0 auto; }
+    aside .item .thumb svg { width: 100%; height: 100%; }
+    aside .item .name { font-size: 12px; line-height: 1.3; }
+    aside .item .name small { color: var(--muted); display: block; }
+    .center { display: grid; place-items: center; padding: 32px; min-height: 0; background: var(--bg); }
+    .stage { width: 100%; max-width: 640px; aspect-ratio: 1 / 1; padding: 20px; background: #0b0f1a; border: 1px solid var(--line); border-radius: 12px; display: grid; place-items: center; }
+    .stage svg { width: 100%; height: 100%; }
+    .right .palettes { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 6px; margin-bottom: 16px; }
+    .palette-chip { padding: 6px 8px; border-radius: 6px; border: 1px solid var(--line); background: #161d2c; cursor: pointer; font-size: 11px; color: var(--ink); }
+    .palette-chip:hover, .palette-chip.active { border-color: var(--accent); background: #1a253d; }
+    .palette-chip .swatches { display: flex; gap: 1px; height: 8px; margin-top: 4px; border-radius: 2px; overflow: hidden; }
+    .palette-chip .swatches span { flex: 1; }
+    .stop-row, .role-row, .layer-row { display: flex; align-items: center; gap: 8px; padding: 4px 0; font-size: 12px; }
+    .stop-row label, .role-row label, .layer-row label { color: var(--ink); flex: 1; cursor: pointer; }
+    .stop-row input[type=color], .role-row input[type=color] { width: 28px; height: 22px; padding: 0; border: 1px solid var(--line); border-radius: 4px; background: transparent; cursor: pointer; }
+    .stop-row code, .role-row code { color: var(--muted); font-size: 10px; }
+    .layer-row input[type=checkbox] { accent-color: var(--accent); }
+    .toolbar { display: flex; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
+    .toolbar button { background: var(--accent); color: white; border: none; padding: 6px 10px; border-radius: 5px; cursor: pointer; font-size: 12px; }
+    .toolbar button.ghost { background: transparent; border: 1px solid var(--line); color: var(--ink); }
+    details { margin-top: 12px; }
+    details summary { color: var(--muted); cursor: pointer; padding: 4px 0; font-size: 12px; }
+    .alert { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.4); color: #f5a623; padding: 6px 8px; border-radius: 6px; font-size: 11px; margin-bottom: 10px; }
+    pre.svg-src { font-size: 10px; max-height: 200px; overflow: auto; background: #0b0f1a; padding: 8px; border-radius: 6px; white-space: pre-wrap; word-break: break-all; }
+    @media (max-width: 900px) {
+      .layout { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr auto; }
+      aside, .right { border: none; border-top: 1px solid var(--line); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Verify &amp; Fine-tune</h1>
+    <p class="tagline">Pick any seeded asset, swap palettes, tweak individual layer/role colors, toggle layers, and download. Pure client-side — no backend needed.</p>
+    <nav class="tools"><a href="index.html">← Gallery</a> · <a href="generator.html">Generator playground</a></nav>
+  </header>
+
+  <main class="layout">
+    <aside id="sidebar">
+      <h3>Library</h3>
+      <div id="items"></div>
+    </aside>
+
+    <section class="center">
+      <div class="stage" id="stage"><p style="color:var(--muted)">Loading…</p></div>
+      <div class="toolbar" style="margin-top:16px">
+        <button id="download">Download SVG</button>
+        <button id="copy" class="ghost">Copy SVG</button>
+        <button id="reset" class="ghost">Reset</button>
+      </div>
+    </section>
+
+    <aside class="right">
+      <div id="alert" class="alert" style="display:none">If the gallery is empty, the static page wasn't deployed yet. Run <code>python -m studio.library.seed</code> locally, or push to <code>main</code> and let GH Pages deploy.</div>
+      <h3>Palette</h3>
+      <div id="palettes" class="palettes"></div>
+      <h3>Per-stop colors</h3>
+      <div id="stops"></div>
+      <h3>Per-role colors</h3>
+      <div id="roles"><p style="color:var(--muted);font-size:11px">Select an asset.</p></div>
+      <h3>Visible layers</h3>
+      <div id="layers"></div>
+      <details>
+        <summary>Show SVG source</summary>
+        <pre id="src" class="svg-src"></pre>
+      </details>
+    </aside>
+  </main>
+
+  <script type="module">
+    import { PALETTES, ALL_STOPS, RAMP_STOPS, palette } from "./js/palettes.js";
+    import { recolor, applyOverrides, listRoles, listLayers, toggleLayerVisibility } from "./js/recolor.js";
+    import { validate } from "./js/sanitizer.js";
+
+    const STATE = {
+      assets: [],
+      current: null,        // asset metadata
+      originalSvg: "",
+      paletteId: "dusk",
+      perStop: {},          // overrides on top of the named palette: { stop: "#hex" }
+      perRole: {},          // role-name → "#hex"
+      hiddenLayers: new Set(),
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    async function bootstrap() {
+      renderPalettes();
+      await loadLibrary();
+    }
+
+    function renderPalettes() {
+      const container = $("palettes");
+      container.innerHTML = "";
+      for (const [id, p] of Object.entries(PALETTES)) {
+        const el = document.createElement("button");
+        el.className = "palette-chip" + (id === STATE.paletteId ? " active" : "");
+        el.dataset.palette = id;
+        el.innerHTML = `${p.name}<div class="swatches">${RAMP_STOPS.map(s => `<span style="background:${p[s]}"></span>`).join("")}</div>`;
+        el.addEventListener("click", () => setPalette(id));
+        container.appendChild(el);
+      }
+    }
+
+    function setPalette(id) {
+      STATE.paletteId = id;
+      STATE.perStop = {};
+      STATE.perRole = {};
+      renderPalettes();
+      rerender();
+    }
+
+    async function loadLibrary() {
+      try {
+        const items = await fetch("library/index.json", { cache: "no-cache" }).then(r => r.json());
+        STATE.assets = items;
+        renderSidebar();
+        if (items.length > 0) await selectAsset(items[0].slug);
+        else $("alert").style.display = "block";
+      } catch (e) {
+        $("alert").style.display = "block";
+        $("alert").textContent = "Could not load library/index.json. If you're viewing this via file://, browsers block local fetches — push to GitHub and view via Pages, or run `cd studio/studio/web && python -m http.server 8000`.";
+      }
+    }
+
+    function renderSidebar() {
+      const c = $("items");
+      c.innerHTML = "";
+      for (const a of STATE.assets) {
+        const item = document.createElement("div");
+        item.className = "item" + (STATE.current && STATE.current.slug === a.slug ? " active" : "");
+        item.innerHTML = `<div class="thumb"></div><div class="name"><strong>${a.title}</strong><small>${a.type}</small></div>`;
+        item.addEventListener("click", () => selectAsset(a.slug));
+        c.appendChild(item);
+        fetch("library/" + a.svg_path).then(r => r.text()).then(t => {
+          item.querySelector(".thumb").innerHTML = t;
+        }).catch(() => {});
+      }
+    }
+
+    async function selectAsset(slug) {
+      const a = STATE.assets.find(x => x.slug === slug);
+      if (!a) return;
+      STATE.current = a;
+      STATE.paletteId = a.palette;
+      STATE.perStop = {};
+      STATE.perRole = {};
+      STATE.hiddenLayers = new Set();
+      STATE.originalSvg = await fetch("library/" + a.svg_path).then(r => r.text());
+      renderPalettes();
+      renderSidebar();
+      renderStops();
+      renderRoles();
+      renderLayers();
+      rerender();
+    }
+
+    function activePalette() {
+      const base = { ...palette(STATE.paletteId) };
+      for (const [k, v] of Object.entries(STATE.perStop)) base[k] = v;
+      return base;
+    }
+
+    function renderStops() {
+      const c = $("stops");
+      c.innerHTML = "";
+      const p = activePalette();
+      for (const stop of ALL_STOPS) {
+        const row = document.createElement("div");
+        row.className = "stop-row";
+        row.innerHTML = `<input type="color" value="${p[stop]}"/><label>${stop}<br><code>${p[stop]}</code></label>`;
+        const input = row.querySelector("input");
+        input.addEventListener("input", () => {
+          STATE.perStop[stop] = input.value;
+          rerender();
+        });
+        c.appendChild(row);
+      }
+    }
+
+    function renderRoles() {
+      const c = $("roles");
+      c.innerHTML = "";
+      if (!STATE.originalSvg) return;
+      const roles = listRoles(STATE.originalSvg);
+      if (!roles.length) { c.innerHTML = `<p style="color:var(--muted);font-size:11px">This SVG has no data-role attributes.</p>`; return; }
+      for (const role of roles) {
+        const row = document.createElement("div");
+        row.className = "role-row";
+        const current = STATE.perRole[role] || "#999999";
+        row.innerHTML = `<input type="color" value="${current}"/><label>${role}</label>`;
+        const input = row.querySelector("input");
+        input.addEventListener("input", () => {
+          STATE.perRole[role] = input.value;
+          rerender();
+        });
+        c.appendChild(row);
+      }
+    }
+
+    function renderLayers() {
+      const c = $("layers");
+      c.innerHTML = "";
+      const layers = listLayers(STATE.originalSvg);
+      for (const layer of layers) {
+        const row = document.createElement("div");
+        row.className = "layer-row";
+        row.innerHTML = `<input type="checkbox" checked id="lyr-${layer}"/><label for="lyr-${layer}">data-layer="${layer}"</label>`;
+        const input = row.querySelector("input");
+        input.addEventListener("change", () => {
+          if (input.checked) STATE.hiddenLayers.delete(layer);
+          else STATE.hiddenLayers.add(layer);
+          rerender();
+        });
+        c.appendChild(row);
+      }
+    }
+
+    function currentSvg() {
+      if (!STATE.originalSvg) return "";
+      const sourcePalette = palette(STATE.current.palette);
+      const targetPalette = activePalette();
+      let { svg } = recolor(STATE.originalSvg, sourcePalette, targetPalette);
+      if (Object.keys(STATE.perRole).length) {
+        const overrides = {};
+        for (const [role, color] of Object.entries(STATE.perRole)) overrides[`role:${role}`] = color;
+        svg = applyOverrides(svg, overrides).svg;
+      }
+      if (STATE.hiddenLayers.size) {
+        svg = toggleLayerVisibility(svg, Array.from(STATE.hiddenLayers));
+      }
+      return svg;
+    }
+
+    function rerender() {
+      if (!STATE.current) return;
+      const svg = currentSvg();
+      $("stage").innerHTML = svg;
+      $("src").textContent = svg;
+      const errors = validate(svg, { minLayers: 1 });
+      if (errors.length) {
+        console.warn("validation errors", errors);
+      }
+    }
+
+    $("download").addEventListener("click", () => {
+      if (!STATE.current) return;
+      const blob = new Blob([currentSvg()], { type: "image/svg+xml" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = STATE.current.slug + "-edited.svg";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    $("copy").addEventListener("click", async () => {
+      if (!STATE.current) return;
+      await navigator.clipboard.writeText(currentSvg());
+      const btn = $("copy");
+      const old = btn.textContent;
+      btn.textContent = "Copied!";
+      setTimeout(() => { btn.textContent = old; }, 1200);
+    });
+
+    $("reset").addEventListener("click", () => {
+      if (!STATE.current) return;
+      STATE.paletteId = STATE.current.palette;
+      STATE.perStop = {};
+      STATE.perRole = {};
+      STATE.hiddenLayers = new Set();
+      renderPalettes();
+      renderStops();
+      renderRoles();
+      renderLayers();
+      rerender();
+    });
+
+    bootstrap();
+  </script>
+</body>
+</html>

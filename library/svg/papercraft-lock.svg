@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect x="16" y="50" width="32" height="4" fill="#161d3a" data-layer="0" data-role="lock-shadow"/>
+  <path d="M22 22 Q22 12 32 12 Q42 12 42 22 L42 30 L38 30 L38 22 Q38 16 32 16 Q26 16 26 22 L26 30 L22 30 Z" fill="#2c3a6b" data-layer="1" data-role="shackle-base"/>
+  <path d="M24 22 Q24 14 32 14 Q40 14 40 22 L40 28 L36 28 L36 22 Q36 18 32 18 Q28 18 28 22 L28 28 L24 28 Z" fill="#5d7bc7" data-layer="2" data-role="shackle-front"/>
+  <rect x="14" y="30" width="36" height="22" rx="2" fill="#2c3a6b" data-layer="1" data-role="body-base"/>
+  <rect x="16" y="32" width="32" height="18" rx="1.5" fill="#5d7bc7" data-layer="2" data-role="body-front"/>
+  <rect x="18" y="34" width="28" height="3" fill="#a8c0ee" data-layer="3" data-role="body-light"/>
+  <circle cx="32" cy="40" r="3" fill="#161d3a" data-layer="3" data-role="keyhole"/>
+  <rect x="31" y="40" width="2" height="6" fill="#161d3a" data-layer="3" data-role="keyhole-stem"/>
+</svg>

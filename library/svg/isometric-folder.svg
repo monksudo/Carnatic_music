@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+  <ellipse cx="100" cy="170" rx="65" ry="10" fill="#161d3a" data-layer="0" data-role="ground-shadow"/>
+  <polygon points="40,90 80,70 130,70 140,80 160,80 160,160 40,160" fill="#2c3a6b" data-layer="1" data-role="folder-back"/>
+  <polygon points="40,100 160,100 160,170 40,170" fill="#5d7bc7" data-layer="2" data-role="folder-body"/>
+  <polygon points="40,100 60,90 180,90 160,100" fill="#a8c0ee" data-layer="3" data-role="folder-top"/>
+  <rect x="60" y="115" width="80" height="3" fill="#e8f0ff" data-layer="4" data-role="folder-paper-edge"/>
+  <rect x="60" y="123" width="80" height="3" fill="#e8f0ff" data-layer="4" data-role="folder-paper-edge-2"/>
+  <polygon points="80,70 130,70 130,80 80,80" fill="#161d3a" data-layer="1" data-role="folder-tab-shadow"/>
+  <circle cx="148" cy="145" r="4" fill="#f5a623" data-layer="5" data-role="folder-badge"/>
+</svg>
