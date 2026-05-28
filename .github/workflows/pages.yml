@@ -2,7 +2,7 @@ name: Deploy gallery to GitHub Pages
 
 on:
   push:
-    branches: [main]
+    branches: [main, "claude/**"]
     paths:
       - "studio/studio/web/**"
       - "studio/studio/library/**"

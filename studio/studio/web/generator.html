@@ -19,24 +19,53 @@
     button.run:disabled { opacity: 0.5; cursor: not-allowed; }
     .preview-wrap { aspect-ratio: 1 / 1; background: #0b0f1a; padding: 16px; border-radius: 8px; display: grid; place-items: center; }
     pre { background: #0b0f1a; padding: 10px; border-radius: 8px; overflow: auto; max-height: 300px; font-size: 12px; }
+    .tabs { display: flex; gap: 4px; margin-bottom: 12px; }
+    .tabs button { background: transparent; color: var(--muted); border: 1px solid var(--line); padding: 4px 10px; border-radius: 6px; cursor: pointer; font-size: 12px; }
+    .tabs button.active { background: var(--accent); color: white; border-color: var(--accent); }
+    .alert { background: rgba(245,166,35,0.1); border: 1px solid rgba(245,166,35,0.4); color: #f5a623; padding: 8px 10px; border-radius: 6px; font-size: 12px; margin-bottom: 10px; }
+    .hint { color: var(--muted); font-size: 11px; margin-top: 4px; }
     @media (max-width: 900px) { .playground { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <header>
     <h1>Generator playground</h1>
-    <p class="tagline">Drive the local Studio API at <code id="api-url">http://127.0.0.1:8000</code>. Start it with <code>studio serve</code>.</p>
-    <nav class="tools"><a href="index.html">← Back to gallery</a></nav>
+    <p class="tagline">Two backends — pick whichever you have.</p>
+    <nav class="tools">
+      <a href="index.html">← Gallery</a> ·
+      <a href="verify.html">Verify &amp; fine-tune</a>
+    </nav>
   </header>
   <main class="playground">
     <section class="panel">
       <h2>Inputs</h2>
-      <label>API base URL
-        <input id="api" value="http://127.0.0.1:8000" />
-      </label>
+      <div class="tabs">
+        <button id="tab-local" class="active">Local API (free)</button>
+        <button id="tab-hf">HF Inference (free token)</button>
+      </div>
+      <div id="cfg-local">
+        <label>API base URL
+          <input id="api" value="http://127.0.0.1:8000" />
+        </label>
+        <p class="hint">Run <code>pip install -e ./studio &amp;&amp; studio serve</code> after installing Ollama (also free).</p>
+      </div>
+      <div id="cfg-hf" style="display:none">
+        <label>Hugging Face token (free, paste it locally — never sent anywhere except api-inference.huggingface.co)
+          <input id="hf_token" type="password" placeholder="hf_..." autocomplete="off"/>
+        </label>
+        <label>Model
+          <input id="hf_model" value="Qwen/Qwen2.5-Coder-32B-Instruct"/>
+        </label>
+        <p class="hint">Get a token at <a href="https://huggingface.co/settings/tokens">huggingface.co/settings/tokens</a>. The token stays in your browser's memory — never persisted, never sent to this site.</p>
+      </div>
+
       <div class="row">
         <label>Type
-          <select id="type"></select>
+          <select id="type">
+            <option value="icon">icon</option>
+            <option value="clipart_3d_layered" selected>clipart_3d_layered</option>
+            <option value="arch_diagram">arch_diagram</option>
+          </select>
         </label>
         <label>Palette
           <select id="palette"></select>
@@ -74,38 +103,58 @@
         <input id="tags" placeholder="e.g. domain:aws, style:papercraft" />
       </label>
       <button class="run" id="run">Generate</button>
+      <p id="status" style="color:var(--muted);font-size:12px;margin-top:10px"></p>
     </section>
     <section class="panel">
       <h2>Output</h2>
-      <div class="preview-wrap" id="preview">
-        <p style="color:#7d8590">No render yet.</p>
+      <div class="preview-wrap" id="preview"><p style="color:var(--muted)">No render yet.</p></div>
+      <p id="sanitize-note" style="color:var(--muted);font-size:11px;margin-top:8px"></p>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button id="download" class="run" style="display:none">Download SVG</button>
+        <button id="open-verify" class="run" style="display:none;background:transparent;border:1px solid var(--line);color:var(--ink)">Tweak in Verify →</button>
       </div>
-      <p id="status" style="color:#7d8590;font-size:13px;margin-top:10px"></p>
-      <details><summary>Raw response JSON</summary><pre id="raw"></pre></details>
+      <details><summary>Raw response / sanitizer report</summary><pre id="raw"></pre></details>
     </section>
   </main>
-  <footer><p>The API must be running locally (or proxied through a free HF Space) — no model runs in the browser yet.</p></footer>
+  <footer>
+    <p>
+      <strong>How free generation works:</strong> the system prompt + few-shot
+      exemplars are bundled in the page; the call goes directly from your
+      browser to Hugging Face Inference; the response is sanitized in JS so it's
+      gradient-free before display.
+    </p>
+  </footer>
 
-  <script>
+  <script type="module">
+    import { PALETTES, palette } from "./js/palettes.js";
+    import { sanitize, validate } from "./js/sanitizer.js";
+
     const $ = id => document.getElementById(id);
-    async function init() {
-      const api = $("api").value;
-      try {
-        const [types, palettes] = await Promise.all([
-          fetch(api + "/types").then(r => r.json()),
-          fetch(api + "/palettes").then(r => r.json()),
-        ]);
-        types.forEach(t => $("type").append(new Option(t, t)));
-        palettes.forEach(p => $("palette").append(new Option(`${p.name} (${p.id})`, p.id)));
-      } catch (e) {
-        $("status").textContent = "Could not reach API. Start it with `studio serve`.";
+    let mode = "local";
+    let lastSvg = "";
+
+    function populatePalettes() {
+      const sel = $("palette");
+      for (const [id, p] of Object.entries(PALETTES)) {
+        const o = document.createElement("option");
+        o.value = id; o.textContent = `${p.name} (${id})`;
+        sel.appendChild(o);
       }
     }
-    $("api").addEventListener("change", init);
 
-    $("run").addEventListener("click", async () => {
-      const api = $("api").value;
-      const body = {
+    $("tab-local").addEventListener("click", () => {
+      mode = "local";
+      $("tab-local").classList.add("active"); $("tab-hf").classList.remove("active");
+      $("cfg-local").style.display = ""; $("cfg-hf").style.display = "none";
+    });
+    $("tab-hf").addEventListener("click", () => {
+      mode = "hf";
+      $("tab-hf").classList.add("active"); $("tab-local").classList.remove("active");
+      $("cfg-hf").style.display = ""; $("cfg-local").style.display = "none";
+    });
+
+    function gatherOptions() {
+      return {
         type: $("type").value,
         prompt: $("prompt").value,
         palette: $("palette").value || "dusk",
@@ -117,32 +166,119 @@
         combinations: $("combinations").value,
         tags: $("tags").value.split(",").map(s => s.trim()).filter(Boolean),
       };
+    }
+
+    async function runLocal() {
+      const body = gatherOptions();
+      const r = await fetch($("api").value + "/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.detail || JSON.stringify(json));
+      return { svg: json.svg, raw: json, report: json.sanitize_report };
+    }
+
+    // System prompt bundled into the page — kept compact for free-tier latency.
+    const SHARED_RULES = `Output ONLY a single <svg>...</svg> element. NO prose, NO markdown fences.
+
+Hard rules:
+- Valid SVG 1.1 with a viewBox on the root.
+- NO gradients (<linearGradient>, <radialGradient>, <stop>), NO filters/masks/clipPaths, NO <image>/<foreignObject>, NO external href.
+- Use ONLY the provided palette hex codes.
+- Every visible shape has: fill="#..." (palette color), data-layer="N" (int depth slice), data-role="kebab-case-name".
+
+Papercraft 3D: stack flat-color polygons offset like cut paper.
+  layer 0 = shadow, 1 = base, 2 = mid, 3 = light, 4+ = highlight.
+Never blend or interpolate.`;
+
+    const TYPE_HINTS = {
+      icon: "viewBox=0 0 64 64. 4–8 layers. No background rect.",
+      clipart_3d_layered: "viewBox=0 0 200 200. ≥5 distinct data-layer values, ≥8 data-role values. Isometric projection.",
+      arch_diagram: "viewBox=0 0 960 540. 4–9 components, each with data-role=\"component:<name>\". Connections as thin lines; arrows as small polygons (no <marker>).",
+    };
+
+    function buildSystemPrompt(opts) {
+      const pal = palette(opts.palette);
+      const palObj = { highlight: pal.highlight, light: pal.light, mid: pal.mid, base: pal.base, shadow: pal.shadow, accent_a: pal.accent_a, accent_b: pal.accent_b, background: pal.background, ink: pal.ink };
+      let extra = `\n\nType: ${opts.type}. ${TYPE_HINTS[opts.type] || ""}`;
+      extra += `\nStyle: ${opts.style_mode}. Target ${opts.layering} layers.`;
+      if (opts.aspect_ratio) extra += `\nAspect ratio: ${opts.aspect_ratio}.`;
+      if (opts.components && opts.components.length) extra += `\nRequired components (each MUST appear as data-role): ${opts.components.join(", ")}.`;
+      if (opts.combinations) extra += `\nComposition: ${opts.combinations}.`;
+      return `${SHARED_RULES}${extra}\n\nPalette (use ONLY these hex codes):\n${JSON.stringify(palObj, null, 2)}`;
+    }
+
+    async function runHF() {
+      const opts = gatherOptions();
+      const token = $("hf_token").value.trim();
+      const model = $("hf_model").value.trim();
+      if (!token) throw new Error("Paste a Hugging Face token first.");
+      if (!model) throw new Error("Pick an HF model.");
+      const sys = buildSystemPrompt(opts);
+      const url = `https://api-inference.huggingface.co/v1/chat/completions`;
+      const r = await fetch(url, {
+        method: "POST",
+        headers: { "Authorization": `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model,
+          messages: [
+            { role: "system", content: sys },
+            { role: "user", content: opts.prompt },
+          ],
+          max_tokens: 4096,
+          temperature: 0.4,
+          seed: opts.seed,
+        }),
+      });
+      const json = await r.json();
+      if (!r.ok) throw new Error(json.error || json.message || JSON.stringify(json));
+      const content = json.choices?.[0]?.message?.content;
+      if (!content) throw new Error("HF returned empty content.");
+      const { svg, report } = sanitize(content, palette(opts.palette));
+      const errors = validate(svg, { minLayers: Math.min(opts.layering, 3), requireRole: true });
+      if (errors.length) console.warn("validation:", errors);
+      return { svg, raw: { raw_model_output: content, sanitize_report: report, validation: errors }, report };
+    }
+
+    $("run").addEventListener("click", async () => {
       $("run").disabled = true;
-      $("status").textContent = "Generating...";
+      $("status").textContent = "Generating…";
       $("preview").innerHTML = "";
+      $("raw").textContent = "";
+      $("download").style.display = "none";
+      $("open-verify").style.display = "none";
       try {
-        const r = await fetch(api + "/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const json = await r.json();
-        $("raw").textContent = JSON.stringify(json, null, 2);
-        if (!r.ok) {
-          $("status").textContent = "Error: " + (json.detail || JSON.stringify(json));
-          return;
-        }
-        $("preview").innerHTML = json.svg;
-        const a = json.asset;
-        $("status").textContent = `slug=${a ? a.slug : "(unsaved)"} | attempts=${json.attempts} | sanitizer remapped ${json.sanitize_report.refs_remapped} ref(s)`;
+        const { svg, raw, report } = mode === "hf" ? await runHF() : await runLocal();
+        lastSvg = svg;
+        $("preview").innerHTML = svg;
+        $("raw").textContent = JSON.stringify(raw, null, 2);
+        $("status").textContent = `✓ done`;
+        $("sanitize-note").textContent = `sanitizer: removed ${report.gradients_removed} gradient(s), remapped ${report.refs_remapped} url(#) ref(s), snapped ${report.colors_snapped} color(s).`;
+        $("download").style.display = "";
+        $("open-verify").style.display = "";
       } catch (e) {
-        $("status").textContent = "Request failed: " + e.message;
+        $("status").innerHTML = `<span style="color:#f87171">${e.message}</span>`;
       } finally {
         $("run").disabled = false;
       }
     });
 
-    init();
+    $("download").addEventListener("click", () => {
+      const blob = new Blob([lastSvg], { type: "image/svg+xml" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "studio-generated.svg";
+      a.click();
+    });
+
+    $("open-verify").addEventListener("click", () => {
+      sessionStorage.setItem("studio_generated_svg", lastSvg);
+      location.href = "verify.html?source=session";
+    });
+
+    populatePalettes();
   </script>
 </body>
 </html>

@@ -33,6 +33,50 @@ $ studio generate clipart_3d_layered "isometric data center" \
 - **Deterministic recolor**: re-skin any asset to any palette without a model
   call (instant, lossless). Lineage is tracked via `parent_slug`.
 
+## Verify it works (free, zero install)
+
+Two free paths, neither requires installing anything locally:
+
+### 1. GitHub Pages — live URL with editor
+
+After the `Deploy gallery to GitHub Pages` workflow runs on this branch (it
+triggers automatically on every push), Pages will host three pages at:
+
+- `https://<your-gh-username>.github.io/<repo-name>/`
+  → gallery of all seeded SVGs
+- `…/verify.html` → **interactive editor**: pick any seed, swap palette,
+  tweak per-stop / per-role colors, toggle layers, download the result.
+  100% client-side, zero backend.
+- `…/generator.html` → playground that calls either a local API *or*
+  the **Hugging Face Inference API** directly from your browser using your
+  own free HF token (no backend, no install).
+
+First-time setup the user has to do once: in repo settings, **Pages → Build
+and deployment → Source: GitHub Actions**. The next workflow run will print
+the URL.
+
+### 2. Open the files locally (one-liner)
+
+```bash
+cd studio
+python3 -m studio.web.dev_serve     # binds 127.0.0.1:8000
+```
+
+That builds a temp dir mirroring the GH Pages layout (HTMLs + JS + library
+side-by-side) and serves it. Prints the gallery / verify / generator URLs on
+start. Stdlib-only: no `pip install` required to run this command, only the
+package being importable. Browsers block `fetch()` from `file://`, which is
+why a server is needed.
+
+### 3. Generate brand-new SVGs without a local model
+
+Open `generator.html`, switch to the **HF Inference** tab, paste a free
+Hugging Face token (from <https://huggingface.co/settings/tokens>), pick a
+type / palette / structured options, and hit Generate. The system prompt and
+the sanitizer both run in your browser — the only network call is directly
+to `api-inference.huggingface.co`. The token stays in browser memory; this
+site never touches it.
+
 ## Install
 
 ```bash
